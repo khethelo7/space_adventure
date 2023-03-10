@@ -15,10 +15,10 @@ YELLOW = (255, 255, 0)
 FPS = 60
 
 # robot declaration constants
-ROBO_WIDTH, ROBO_HEIGHT = 40, 40
+ROBO_WIDTH, ROBOT_HEIGHT = 40, 40
 ROBOT_IMAGE = pygame.transform.scale(
     pygame.image.load(os.path.join('Assets', 'spaceship_red.png')),
-    (ROBO_WIDTH, ROBO_HEIGHT))
+    (ROBO_WIDTH, ROBOT_HEIGHT))
 ROBOT = pygame.transform.rotate(ROBOT_IMAGE, 180)
 
 # world declaration constants
@@ -30,13 +30,13 @@ def listen():
 
     keys_pressed = pygame.key.get_pressed()
 
-    if keys_pressed[pygame.K_UP]:
+    if keys_pressed[pygame.K_UP] and robot.y + VEL > 0:
         robot.y -= VEL
-    if keys_pressed[pygame.K_DOWN]:
+    if keys_pressed[pygame.K_DOWN] and robot.y - VEL < height-45:
         robot.y += VEL
-    if keys_pressed[pygame.K_LEFT]:
+    if keys_pressed[pygame.K_LEFT] and robot.x - VEL > 0:
         robot.x -= VEL
-    if keys_pressed[pygame.K_RIGHT]:
+    if keys_pressed[pygame.K_RIGHT] and robot.x + VEL < width-45:
         robot.x += VEL
 
 
@@ -52,7 +52,7 @@ def main():
     global robot
 
     robot = pygame.Rect(width//2-ROBOT.get_width(),
-                        height-100, ROBO_WIDTH, ROBO_HEIGHT)
+                        height-100, ROBO_WIDTH, ROBOT_HEIGHT)
 
     run = True
     clock = pygame.time.Clock()
