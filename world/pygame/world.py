@@ -23,17 +23,36 @@ ROBOT = pygame.transform.rotate(ROBOT_IMAGE, 180)
 
 # world declaration constants
 WIN = pygame.display.set_mode((width, height))
+VEL = 5
+
+
+def listen():
+
+    keys_pressed = pygame.key.get_pressed()
+
+    if keys_pressed[pygame.K_UP]:
+        robot.y -= VEL
+    if keys_pressed[pygame.K_DOWN]:
+        robot.y += VEL
+    if keys_pressed[pygame.K_LEFT]:
+        robot.x -= VEL
+    if keys_pressed[pygame.K_RIGHT]:
+        robot.x += VEL
 
 
 def setup_world():
     WIN.fill(BLUE)
-    
-    WIN.blit(ROBOT, (width//2-ROBOT.get_width(), height-100))
-    
+
+    WIN.blit(ROBOT, (robot.x, robot.y))
+
     pygame.display.update()
 
 
 def main():
+    global robot
+
+    robot = pygame.Rect(width//2-ROBOT.get_width(),
+                        height-100, ROBO_WIDTH, ROBO_HEIGHT)
 
     run = True
     clock = pygame.time.Clock()
@@ -45,6 +64,7 @@ def main():
                 run = False
 
         setup_world()
+        listen()
 
     pygame.quit()
 
