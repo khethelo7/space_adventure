@@ -305,7 +305,7 @@ def robot_start():
 
         output(robot_name, "Shutting down..")
     else:
-        obstacles = [(random.randint(900, 900), random.randint(900, 900)) for i in range(random.randint(1, 10))]
+        obstacles = [(random.randint(0, 900), random.randint(0, 900)) for i in range(random.randint(1, 10))]
         world.obstacles_list = obstacles
         world.main()
 

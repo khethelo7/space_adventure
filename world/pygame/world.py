@@ -54,12 +54,12 @@ def setup_world():
     WIN.blit(ROBOT, (robot.x, robot.y))
 
     #for testing
-    obs = pygame.Rect(10, 10, OBS_WIDTH, OBS_HEIGHT)
-    WIN.blit(ASTEROID_IMAGE, (obs.x, obs.y))
+    # obs = pygame.Rect(10, 10, OBS_WIDTH, OBS_HEIGHT)
+    # WIN.blit(ASTEROID_IMAGE, (obs.x, obs.y))
 
-    # for x, y in obstacles_list:
-    #     obs = pygame.Rect(x, y, OBS_WIDTH, OBS_HEIGHT)
-    #     WIN.blit(ASTEROID_IMAGE, (obs.x, obs.y))
+    for rect in obstacles_list:
+        obs = pygame.Rect(rect[0], rect[1], OBS_WIDTH, OBS_HEIGHT)
+        WIN.blit(ASTEROID_IMAGE, rect)
 
     pygame.display.update()
 
