@@ -13,6 +13,7 @@ YELLOW = (255, 255, 0)
 
 # graphics declaration constants
 FPS = 60
+VOID = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'void.png')), (width, height))
 
 # robot declaration constants
 ROBO_WIDTH, ROBOT_HEIGHT = 40, 40
@@ -49,7 +50,8 @@ def listen():
 
 
 def setup_world():
-    WIN.fill(BLUE)
+    # WIN.fill(BLUE)
+    WIN.blit(VOID, (0, 0))
 
     WIN.blit(ROBOT, (robot.x, robot.y))
 
