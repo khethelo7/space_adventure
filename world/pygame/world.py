@@ -24,6 +24,14 @@ ROBOT = pygame.transform.rotate(ROBOT_IMAGE, 180)
 # world declaration constants
 WIN = pygame.display.set_mode((width, height))
 VEL = 5
+OBS_WIDTH, OBS_HEIGHT = 50, 50
+
+# obstacle declaration constants
+ASTEROID_IMAGE = pygame.transform.scale(pygame.image.load(
+    os.path.join('Assets', 'asteroid.png')), (OBS_WIDTH, OBS_HEIGHT))
+
+# variables recieved from robot.py
+obstacles_list = []
 
 
 def listen():
@@ -44,6 +52,14 @@ def setup_world():
     WIN.fill(BLUE)
 
     WIN.blit(ROBOT, (robot.x, robot.y))
+
+    #for testing
+    obs = pygame.Rect(10, 10, OBS_WIDTH, OBS_HEIGHT)
+    WIN.blit(ASTEROID_IMAGE, (obs.x, obs.y))
+
+    # for x, y in obstacles_list:
+    #     obs = pygame.Rect(x, y, OBS_WIDTH, OBS_HEIGHT)
+    #     WIN.blit(ASTEROID_IMAGE, (obs.x, obs.y))
 
     pygame.display.update()
 
