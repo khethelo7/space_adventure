@@ -1,3 +1,4 @@
+import random
 import pygame
 import os
 
@@ -58,13 +59,14 @@ def setup_world():
     #for testing
     # obs = pygame.Rect(10, 10, OBS_WIDTH, OBS_HEIGHT)
     # WIN.blit(ASTEROID_IMAGE, (obs.x, obs.y))
-
-    for rect in obstacles_list:
-        obs = pygame.Rect(rect[0], rect[1], OBS_WIDTH, OBS_HEIGHT)
-        WIN.blit(ASTEROID_IMAGE, rect)
+    x = random.randint(0, 900)
+    obs = pygame.Rect(x, 0, OBS_WIDTH, OBS_HEIGHT)
+    WIN.blit(ASTEROID_IMAGE, (obs.x, obs.y))
+    # for rect in obstacles_list:
+    #     obs = pygame.Rect(rect[0], rect[1], OBS_WIDTH, OBS_HEIGHT)
+    #     WIN.blit(ASTEROID_IMAGE, rect)
 
     pygame.display.update()
-
 
 def main():
     global robot
@@ -80,7 +82,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
         setup_world()
         listen()
 
