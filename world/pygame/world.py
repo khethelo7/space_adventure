@@ -13,7 +13,7 @@ RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 
 # graphics declaration constants
-FPS = 30
+FPS = 60
 VOID = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'void.png')), (width, height))
 
 # robot declaration constants
@@ -27,6 +27,7 @@ ROBOT = pygame.transform.rotate(ROBOT_IMAGE, 180)
 WIN = pygame.display.set_mode((width, height))
 VEL = 5
 OBS_WIDTH, OBS_HEIGHT = 50, 50
+max_obs = 10
 
 # obstacle declaration constants
 ASTEROID_IMAGE = pygame.transform.scale(pygame.image.load(
@@ -52,14 +53,13 @@ def create_asteroid():
     y = 0 - OBS_HEIGHT
     velocity = random.randint(1, VEL)
     asteroid = Asteroid(x, y, velocity, ASTEROID_IMAGE)
-    asteroids.append(asteroid)
+    if len(asteroids) < max_obs:
+        asteroids.append(asteroid)
     
 
 def move_asteroids():
     global asteroids
     
-    for i in range(1):
-        create_asteroid()
     
     for asteroid in asteroids:
         asteroid.y += asteroid.velocity
@@ -85,6 +85,7 @@ def listen():
 def setup_world():
     global asteroids
     
+    create_asteroid()
     WIN.blit(VOID, (0, 0))
 
     WIN.blit(ROBOT, (robot.x, robot.y))
