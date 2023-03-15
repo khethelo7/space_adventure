@@ -56,7 +56,7 @@ class Asteroid:
 
 
 def detect_collision():
-    for obs in asteroids:
+    for ast, obs in asteroids:
         if robot.colliderect(obs):
             pygame.event.post(pygame.event.Event(USER_HIT))
 
@@ -70,18 +70,18 @@ def create_asteroid():
     asteroid = Asteroid(x, y, velocity, ASTEROID_IMAGE)
     obs = pygame.Rect(x, y, OBS_WIDTH, OBS_HEIGHT)
     if len(asteroids) < max_obs:
-        asteroids.append(obs)
+        asteroids.append((asteroid,obs))
     
 
 def move_asteroids():
     global asteroids
     
-    
-    for asteroid in asteroids:
-        asteroid.y += asteroid.velocity
+    for ast,obs in asteroids:
+        ast.y += ast.velocity
+        obs.y += ast.velocity
         
-        if asteroid.y > height:
-            asteroids.remove(asteroid)
+        if ast.y > height:
+            asteroids.remove((ast,obs))
 
 
 def listen():
@@ -108,8 +108,8 @@ def setup_world():
     WIN.blit(health_bar, (450, 10))
     WIN.blit(ROBOT, (robot.x, robot.y))
     
-    for asteroid in asteroids:
-        WIN.blit(asteroid.image, (asteroid.x, asteroid.y))
+    for ast, obs in asteroids:
+        WIN.blit(ast.image, (ast.x, ast.y))
     move_asteroids()
 
     pygame.display.update()
