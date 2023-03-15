@@ -1,6 +1,7 @@
 import random
 import pygame
 import os
+pygame.font.init()
 
 # border of world
 width, height = 900, 900
@@ -36,6 +37,13 @@ ASTEROID_IMAGE = pygame.transform.scale(pygame.image.load(
 # variables recieved from robot.py
 asteroids = []
 
+# event declaration
+USER_HIT = pygame.USEREVENT + 1
+
+# font declaration
+HEALTH_FONT = pygame.font.SysFont('robotoslab', 40)
+
+
 
 class Asteroid:
     def __init__(self, x, y, velocity, image):
@@ -46,6 +54,13 @@ class Asteroid:
         self.width = OBS_WIDTH
         self.height = OBS_HEIGHT
 
+
+def detect_collision():
+    for obs in asteroids:
+        if robot.colliderect(obs):
+            pygame.event.post(pygame.event.Event(USER_HIT))
+
+
 def create_asteroid():
     global asteroids
     
@@ -53,8 +68,9 @@ def create_asteroid():
     y = 0 - OBS_HEIGHT
     velocity = random.randint(1, VEL)
     asteroid = Asteroid(x, y, velocity, ASTEROID_IMAGE)
+    obs = pygame.Rect(x, y, OBS_WIDTH, OBS_HEIGHT)
     if len(asteroids) < max_obs:
-        asteroids.append(asteroid)
+        asteroids.append(obs)
     
 
 def move_asteroids():
@@ -83,11 +99,13 @@ def listen():
 
 
 def setup_world():
-    global asteroids
+    global asteroids, robot_health
     
     create_asteroid()
     WIN.blit(VOID, (0, 0))
 
+    health_bar = HEALTH_FONT.render("HEALTH: "+str(robot_health), 1, SILVER)
+    WIN.blit(health_bar, (450, 10))
     WIN.blit(ROBOT, (robot.x, robot.y))
     
     for asteroid in asteroids:
@@ -97,10 +115,11 @@ def setup_world():
     pygame.display.update()
 
 def main():
-    global robot
+    global robot, robot_health
 
     robot = pygame.Rect(width//2-ROBOT.get_width(),
                         height-100, ROBO_WIDTH, ROBOT_HEIGHT)
+    robot_health = 50
 
     run = True
     clock = pygame.time.Clock()
@@ -110,6 +129,10 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            if event.type == USER_HIT:
+                robot_health -= 1
+        
+        detect_collision()
         setup_world()
         listen()
 

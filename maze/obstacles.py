@@ -1,116 +1,94 @@
-# -------------------------------------------------------------------------------------------------
-#
-# TODO: Please replace this placeholder code with your solution for Toy Robot 4, and work from there.
-#
-# -------------------------------------------------------------------------------------------------
-
+#IMPORTS
 import turtle
 import random
 
-colors = ["light green", "gray", "maroon", "yellow", "orange", "coral", "gold", "white"]
-obstacles_list = []
+#GLOBALS
+obs = []
+width, length = 4, 4
 
-def is_position_blocked(new_x, new_y):
-    """
-    A function that returns True if the position
-    x, y falls inside an obstacle
+def set_obstacles(obx, oby):
+    """Draws the obstacles using Turtle if world.turtle.world is loaded
 
     Args:
-        x (int): Coordinates of the x position
-        y (int): Coordinates of the y position
+        obx (int): the obstacles x pos
+        oby (int): the obstacles y pos
     """
-    for index, tuple in enumerate(obstacles_list):
-        if new_x in range(tuple[0], tuple[0]+5) and new_y in range(tuple[1], tuple[1]+5):
+    o = turtle.Turtle()
+    o.speed(0)
+    o.penup(), o.goto(obx, oby), o.pendown()
+    o.pencolor("teal")
+    o.begin_fill()
+    o.fillcolor("teal")
+    o.fd(width), o.lt(90), o.fd(length)
+    o.lt(90), o.fd(width), o.lt(90)
+    o.fd(length), o.lt(90)
+    o.end_fill(), o.hideturtle()
+    del o
+
+
+def is_position_blocked(new_x, new_y):
+    """Checks if the position the robot is trying to go to is an obstacles pos or not
+
+    Args:
+        new_x (int): the x pos the robot is trying to go to
+        new_y (int): the y pos the robot is trying to go to
+
+    Returns:
+        bool: True or False depending on the obstacles pos in the world
+    """
+    for obx, oby in obs:
+        if new_x in range(obx, obx+5) and new_y in range(oby, oby+5):
             return True
-        
     return False
 
 
 def is_path_blocked(x1, y1, x2, y2):
-    """
-    A function that returns True if there is an
-    obstacle in the line between the coordinates (x1, y1) and (x2, y2)
+    """Checks if there is an obstacle between x1,y1 and x2,y2
 
     Args:
-        x1 (int): Coordinates of the first point
-        y1 (int): Coordinates of the first point
-        x2 (int): Coordinates of the second point
-        y2 (int): Coordinates of the second point
+        x1 (int): initial x value of robot
+        y1 (int): initial y value of robot
+        x2 (int): destination x value robot is going to
+        y2 (int): destination y value robot is going to
+
+    Returns:
+        bool: True or False depending on whether there is obstacle in path or not
     """
     if x1 == x2:
         if y1 > y2:
             for i in range(y2, y1):
                 if is_position_blocked(x1, i):
                     return True
-
-        if  y1 < y2:
+        elif y2 > y1:
             for i in range(y1, y2):
                 if is_position_blocked(x1, i):
                     return True
-        
-        return False
-
-
     if y1 == y2:
         if x1 > x2:
             for i in range(x2, x1):
                 if is_position_blocked(i, y1):
                     return True
-
-        if x1 < x2:
+        elif x2 > x1:
             for i in range(x1, x2):
                 if is_position_blocked(i, y1):
                     return True
-        
-        return False
-
-
-def create_turtle(x_pos, y_pos):
-    """
-    A function that creates a turtle
-
-    Args:
-        x_pos (int): x position of the turtle
-        y_pos (int): y position of the turtle
-
-    Returns:
-        asteroid (turtle object)
-    """
-    asteroid = turtle.Turtle()
-    asteroid.speed(0)
-    asteroid.fillcolor(random.choice(colors))
-    asteroid.penup()
-    asteroid.goto(x_pos, y_pos)
-    asteroid.pendown()
-    asteroid.begin_fill()
-    for i in range(4):
-        asteroid.forward(5)
-        asteroid.right(90)
-
-    asteroid.end_fill()
-    asteroid.hideturtle()
-    turtle.update()
-
-
-def print_obstacles(robot_name):
-    """
-    A function to print all the available obstacles
-    """
-    if obstacles_list:
-        print(f"{robot_name}: Loaded obstacles.")
-        print("There are some obstacles:")
-        for index, tuple in enumerate(obstacles_list):
-            x = tuple[0]
-            y = tuple[1]
-            print(f"- At position {x},{y} (to {x+4},{y+4})")
-
+    return False
 
 def get_obstacles(obstacles):
-    global obstacles_list
+    """Recevies randomly generated obstacle list from main file
 
-    obstacles_list = obstacles
+    Args:
+        obstacles (list): random obstacle list
+    """
+    global obs
 
+    obs = obstacles
 
-def pass_x_y(obstacles_list):
-    for tuple in obstacles_list:
-        create_turtle(tuple[0], tuple[1])
+def call_set_obstacles():
+    """Will run set obstacles in a for loop
+
+    Args:
+        obs (list): carries a list with random obstacles
+    """
+    for obx, oby in obs:
+        set_obstacles(obx, oby)

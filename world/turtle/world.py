@@ -1,60 +1,14 @@
 import turtle
-import sys
-
-turtle.tracer(2)
 
 # variables tracking position and direction
 position_x = 0
 position_y = 0
-min_y, max_y = -250, 250
-min_x, max_x = -250, 250
 directions = ['forward', 'right', 'back', 'left']
 current_direction_index = 0
-robot = turtle.Turtle()
-screen = turtle.Screen()
 
-def set_up_robot_environment():
-    screen.bgcolor("#141D2A")
-    screen.setup(width=720, height=1000)
-    screen.title("Robot Environment")
-    robot.pencolor("#4E9A06")
-    robot.penup()
-    robot.home()
-    robot.setheading(90)
-    robot.pensize(2)
-    draw_obstacles()
-    turtle.update()
-    
-def set_border():
-    robot.speed(10)
-    robot.setheading(90)
-    robot.penup()
-    robot.setx(-250)
-    robot.sety(-250)
-    robot.pendown()
-    robot.pensize(5)
-    for i in range(4):
-        robot.forward(500)
-        robot.right(90)
-    robot.penup()
-    robot.home()
-    robot.setheading(90)
-    turtle.update()
-
-
-def draw_obstacles():
-    slave = turtle.Turtle()
-    for x, y in obs.obstacles_list:
-        slave.penup(), slave.goto(x, y), slave.pendown()
-        for i in range(4):
-            slave.fd(4)
-            slave.lt(90)
-    slave.hideturtle()
-
-
-def show_position(robot_name):
-    print(' > '+robot_name+' now at position ('+str(position_x)+','+str(position_y)+').')
-
+# area limit vars
+min_y, max_y = -200, 200
+min_x, max_x = -100, 100
 
 def is_position_allowed(new_x, new_y):
     """
@@ -63,43 +17,38 @@ def is_position_allowed(new_x, new_y):
     :param new_y: the new/proposed y position
     :return: True if allowed, i.e. it falls in the allowed area, else False
     """
-
     return min_x <= new_x <= max_x and min_y <= new_y <= max_y
 
-
-def update_position(steps, robot_name):
+def update_position(robot_name, steps):
     """
     Update the current x and y positions given the current direction, and specific nr of steps
     :param steps:
     :return: True if the position was updated, else False
     """
-
-    global position_x, position_y
+    global position_x, position_y, robot
     new_x = position_x
     new_y = position_y
- 
+
     if directions[current_direction_index] == 'forward':
-        new_y += steps
+        new_y = new_y + steps
     elif directions[current_direction_index] == 'right':
-        new_x += steps
+        new_x = new_x + steps
     elif directions[current_direction_index] == 'back':
-        new_y -= steps
+        new_y = new_y - steps
     elif directions[current_direction_index] == 'left':
-        new_x -= steps
+        new_x = new_x - steps
 
-    if obs.is_position_blocked(new_x, new_y) or (
-        obs.is_path_blocked(new_x, new_y, position_x, position_y)):
-            return None 
-
+    if obstacles.is_position_blocked(new_x, new_y) or\
+        obstacles.is_path_blocked(position_x, position_y, new_x, new_y):
+        return None
+    
     if is_position_allowed(new_x, new_y):
         position_x = new_x
         position_y = new_y
         robot.forward(steps)
         turtle.update()
         return True
-    else:
-        return False
-
+    return False
 
 def do_forward(robot_name, steps):
     """
@@ -108,15 +57,14 @@ def do_forward(robot_name, steps):
     :param steps:
     :return: (True, forward output text)
     """
-    do_next = update_position(steps, robot_name)
-    
-    if do_next:
-        return True, ' > '+robot_name+' moved forward by '+str(steps)+' steps.'
-    elif do_next == None:
-        return True, f"{robot_name} Sorry, there is an obstacle in the way."
-    else:
-        return True, ''+robot_name+': Sorry, I cannot go outside my safe zone.'
+    go_on = update_position(robot_name, steps)
 
+    if go_on == True:
+        return True, ' > '+robot_name+' moved forward by '+str(steps)+' steps.'
+    elif go_on == None:
+        return True, f"{robot_name}: Sorry, there is an obstacle in the way."
+    elif go_on == False:
+        return True, ''+robot_name+': Sorry, I cannot go outside my safe zone.'
 
 def do_back(robot_name, steps):
     """
@@ -125,15 +73,30 @@ def do_back(robot_name, steps):
     :param steps:
     :return: (True, forward output text)
     """
-    do_next = update_position(-steps, robot_name)
+    go_on = update_position(robot_name, -steps)
 
-    if do_next:
+    if go_on == True:
         return True, ' > '+robot_name+' moved back by '+str(steps)+' steps.'
-    elif do_next == None:
-        return True, f"{robot_name} Sorry, there is an obstacle in the way."
-    else:
+    elif go_on == None:
+        return True, f"{robot_name}: Sorry, there is an obstacle in the way."
+    elif go_on == False:
         return True, ''+robot_name+': Sorry, I cannot go outside my safe zone.'
-
+    
+def do_left_turn(robot_name):
+    """
+    Do a 90 degree turn to the left
+    :param robot_name:
+    :return: (True, left turn output text)
+    """
+    global current_direction_index, robot
+    
+    current_direction_index -= 1
+    if current_direction_index < 0:
+        current_direction_index = 3
+    
+    robot.left(90)
+    turtle.update()
+    return True, ' > '+robot_name+' turned left.'
 
 def do_right_turn(robot_name):
     """
@@ -141,29 +104,39 @@ def do_right_turn(robot_name):
     :param robot_name:
     :return: (True, right turn output text)
     """
-    global current_direction_index
-
+    global current_direction_index, robot
+    
     current_direction_index += 1
     if current_direction_index > 3:
         current_direction_index = 0
+        
     robot.right(90)
     turtle.update()
-    
     return True, ' > '+robot_name+' turned right.'
 
+def show_position(robot_name):
+    print(' > '+robot_name+' now at position ('+str(position_x)+','+str(position_y)+').')
 
-def do_left_turn(robot_name):
-    """
-    Do a 90 degree turn to the left
-    :param robot_name:
-    :return: (True, left turn output text)
-    """
-    global current_direction_index
+# The environment around the robot
+env = turtle.getscreen()
+env.setup(max_x*10, max_y*5)
+env.bgcolor("#000221")
+env.title("Toy Robot 4")
 
-    current_direction_index -= 1
-    if current_direction_index < 0:
-        current_direction_index = 3
-    robot.left(90)
-    turtle.update()
+# The robot
+robot = turtle.Turtle()
+robot.pensize(5), robot.shape("classic")
+robot.pencolor("navy blue"), robot.fillcolor("blue")
+robot.speed(0)
 
-    return True, ' > '+robot_name+' turned left.'
+# Seting the boundary
+robot.penup(), robot.goto(min_x, max_y), robot.pendown()
+
+for i in range(2):
+    robot.forward(200)
+    robot.right(90)
+    robot.forward(400)
+    robot.right(90)
+
+robot.penup(), robot.home(), robot.left(90), robot.pendown(), robot.showturtle()
+robot.pencolor("#000221")

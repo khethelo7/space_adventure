@@ -286,14 +286,14 @@ def robot_start():
 
         #making obstacles and sending them to obs module
         obstacles = [(random.randint(-200, 200), random.randint(-200, 200)) for i in range(random.randint(1, 10))]
-        world.obs.obstacles_list = obstacles
+        world.obs.obs = obstacles
 
         #show obstacles if there are some
-        if world.obs.obstacles_list:
+        if world.obs.obs:
             if turtle_flag:
-                world.set_up_robot_environment()
+                world.obs.call_set_obstacles()
             print("There are some obstacles:")
-            for x,y in world.obs.obstacles_list:
+            for x,y in world.obs.obs:
                 print(f"- At position {x},{y} (to {x+4},{y+4})")
 
         if len(sys.argv) == 3:
@@ -306,7 +306,7 @@ def robot_start():
         output(robot_name, "Shutting down..")
     else:
         obstacles = [(random.randint(0, 900), random.randint(0, 900)) for i in range(random.randint(1, 10))]
-        world.obstacles_list = obstacles
+        world.obs = obstacles
         world.main()
 
 
