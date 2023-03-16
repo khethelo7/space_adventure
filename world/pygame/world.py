@@ -26,7 +26,7 @@ ROBOT = pygame.transform.rotate(ROBOT_IMAGE, 180)
 
 # world declaration constants
 WIN = pygame.display.set_mode((width, height))
-VEL = 5
+VEL = 10
 OBS_WIDTH, OBS_HEIGHT = 50, 50
 max_obs = 10
 
@@ -41,7 +41,7 @@ asteroids = []
 USER_HIT = pygame.USEREVENT + 1
 
 # font declaration
-HEALTH_FONT = pygame.font.SysFont('robotoslab', 40)
+HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
 
 
 
@@ -59,7 +59,17 @@ def detect_collision():
     for ast, obs in asteroids:
         if robot.colliderect(obs):
             pygame.event.post(pygame.event.Event(USER_HIT))
+            asteroids.remove((ast,obs))
 
+def end_game():
+    global robot_health, robot
+    
+    asteroids.clear()
+    pygame.time.delay(5000)
+    robot_health = 10
+    robot.x = width//2-ROBOT.get_width()
+    robot.y = height-100
+    
 
 def create_asteroid():
     global asteroids
@@ -101,16 +111,17 @@ def listen():
 def setup_world():
     global asteroids, robot_health
     
-    create_asteroid()
     WIN.blit(VOID, (0, 0))
-
-    health_bar = HEALTH_FONT.render("HEALTH: "+str(robot_health), 1, SILVER)
-    WIN.blit(health_bar, (450, 10))
-    WIN.blit(ROBOT, (robot.x, robot.y))
     
+    create_asteroid()
+    WIN.blit(ROBOT, (robot.x, robot.y))
+
     for ast, obs in asteroids:
         WIN.blit(ast.image, (ast.x, ast.y))
     move_asteroids()
+    
+    health_bar = HEALTH_FONT.render("HEALTH: "+str(robot_health), 1, SILVER)
+    WIN.blit(health_bar, (350, 10))
 
     pygame.display.update()
 
@@ -119,7 +130,7 @@ def main():
 
     robot = pygame.Rect(width//2-ROBOT.get_width(),
                         height-100, ROBO_WIDTH, ROBOT_HEIGHT)
-    robot_health = 50
+    robot_health = 10
 
     run = True
     clock = pygame.time.Clock()
@@ -131,6 +142,8 @@ def main():
                 run = False
             if event.type == USER_HIT:
                 robot_health -= 1
+                if robot_health == 0:
+                    end_game()
         
         detect_collision()
         setup_world()
