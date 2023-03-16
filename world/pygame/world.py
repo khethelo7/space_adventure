@@ -1,6 +1,8 @@
+import time
 import random
 import pygame
 import os
+pygame.font.init()
 pygame.font.init()
 
 # border of world
@@ -120,6 +122,9 @@ def setup_world():
         WIN.blit(GAME_OVER, (0, 0))
     else:
         WIN.blit(VOID, (0, 0))
+
+    time_text = FONT.render(f"{round(elapsed_time)}s", 1, 'white')
+    WIN.blit(time_text, (10, 10))
     
     create_asteroid()
     WIN.blit(ROBOT, (robot.x, robot.y))
@@ -134,7 +139,7 @@ def setup_world():
     pygame.display.update()
 
 def main():
-    global robot, robot_health, end
+    global robot, robot_health, end, elapsed_time
 
     robot = pygame.Rect(width//2-ROBOT.get_width(),
                         height-100, ROBO_WIDTH, ROBOT_HEIGHT)
@@ -142,10 +147,13 @@ def main():
 
     run = True
     clock = pygame.time.Clock()
+    start_time = time.time()
+    elapsed_time = 0
     end = False
 
     while run:
         clock.tick(FPS)
+        elapsed_time = time.time() - start_time
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False

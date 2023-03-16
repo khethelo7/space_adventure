@@ -13,12 +13,16 @@ history = []
 #flags
 turtle_flag = False
 pygame_flag = False
+pygame_flag = False
 
 if len(sys.argv) > 1:
     if sys.argv[1] == 'turtle':        
         world = ih.dynamic_import('world.turtle.world')
         world.obs = ih.dynamic_import('maze.obstacles')
         turtle_flag = True
+    elif sys.argv[1] == 'pygame':
+        world = ih.dynamic_import('world.pygame.world')
+        pygame_flag = True
     elif sys.argv[1] == 'pygame':
         world = ih.dynamic_import('world.pygame.world')
         pygame_flag = True
@@ -298,7 +302,12 @@ def robot_start():
 
         if len(sys.argv) == 3:
             print(f"{robot_name}: Loaded {sys.argv[-1]}.")
+        if len(sys.argv) == 3:
+            print(f"{robot_name}: Loaded {sys.argv[-1]}.")
 
+        command = get_command(robot_name)
+        while handle_command(robot_name, command):
+            command = get_command(robot_name)
         command = get_command(robot_name)
         while handle_command(robot_name, command):
             command = get_command(robot_name)
