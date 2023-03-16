@@ -34,6 +34,9 @@ max_obs = 10
 ASTEROID_IMAGE = pygame.transform.scale(pygame.image.load(
     os.path.join('Assets', 'asteroid.png')), (OBS_WIDTH, OBS_HEIGHT))
 
+GAME_OVER = pygame.transform.scale(pygame.image.load(
+    os.path.join('Assets', 'game-over.jpg')), (900,900))
+
 # variables recieved from robot.py
 asteroids = []
 
@@ -69,6 +72,8 @@ def end_game():
     robot_health = 10
     robot.x = width//2-ROBOT.get_width()
     robot.y = height-100
+    
+
     
 
 def create_asteroid():
@@ -109,9 +114,12 @@ def listen():
 
 
 def setup_world():
-    global asteroids, robot_health
+    global asteroids, robot_health, end
     
-    WIN.blit(VOID, (0, 0))
+    if end:
+        WIN.blit(GAME_OVER, (0, 0))
+    else:
+        WIN.blit(VOID, (0, 0))
     
     create_asteroid()
     WIN.blit(ROBOT, (robot.x, robot.y))
@@ -126,7 +134,7 @@ def setup_world():
     pygame.display.update()
 
 def main():
-    global robot, robot_health
+    global robot, robot_health, end
 
     robot = pygame.Rect(width//2-ROBOT.get_width(),
                         height-100, ROBO_WIDTH, ROBOT_HEIGHT)
@@ -134,6 +142,7 @@ def main():
 
     run = True
     clock = pygame.time.Clock()
+    end = False
 
     while run:
         clock.tick(FPS)
@@ -143,6 +152,7 @@ def main():
             if event.type == USER_HIT:
                 robot_health -= 1
                 if robot_health == 0:
+                    end = True
                     end_game()
         
         detect_collision()
