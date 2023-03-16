@@ -66,11 +66,13 @@ def detect_collision():
             pygame.event.post(pygame.event.Event(USER_HIT))
             asteroids.remove((ast,obs))
 
+
 def end_game():
-    global robot_health, robot
+    global robot_health, robot, elapsed_time
     
+    elapsed_time = 0
     asteroids.clear()
-    pygame.time.delay(5000)
+    # pygame.time.delay(5000)
     robot_health = 10
     robot.x = width//2-ROBOT.get_width()
     robot.y = height-100
@@ -118,12 +120,10 @@ def listen():
 def setup_world():
     global asteroids, robot_health, end
     
-    if end:
-        WIN.blit(GAME_OVER, (0, 0))
-    else:
-        WIN.blit(VOID, (0, 0))
+    WIN.blit(GAME_OVER, (0, 0))
+    WIN.blit(VOID, (0, 0))
 
-    time_text = FONT.render(f"{round(elapsed_time)}s", 1, 'white')
+    time_text = HEALTH_FONT.render(f"{round(elapsed_time)}s", 1, 'white')
     WIN.blit(time_text, (10, 10))
     
     create_asteroid()
@@ -160,6 +160,7 @@ def main():
             if event.type == USER_HIT:
                 robot_health -= 1
                 if robot_health == 0:
+                    elapsed_time = 0
                     end = True
                     end_game()
         
