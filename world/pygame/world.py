@@ -37,7 +37,7 @@ ASTEROID_IMAGE = pygame.transform.scale(pygame.image.load(
     os.path.join('Assets', 'asteroid.png')), (OBS_WIDTH, OBS_HEIGHT))
 
 GAME_OVER = pygame.transform.scale(pygame.image.load(
-    os.path.join('Assets', 'game-over.jpg')), (900,900))
+    os.path.join('Assets', 'game-over.png')), (900,900))
 
 # variables recieved from robot.py
 asteroids = []
@@ -118,28 +118,42 @@ def listen():
 
 
 def setup_world():
-    global asteroids, robot_health, end
+    global asteroids, robot_health, end, game_over_timer, elapsed_time
     
-    WIN.blit(GAME_OVER, (0, 0))
-    WIN.blit(VOID, (0, 0))
+    if end:
+        if game_over_timer > 0:
+            asteroids = []
+            WIN.fill(BLACK)
+            game_over_text = HEALTH_FONT.render(f"GAME OVER", 1, SILVER)
+            WIN.blit(game_over_text, (350, 10))
+            # WIN.blit(GAME_OVER, (0, 0))
+            game_over_timer -= 1
+        else:
+            asteroids = []
+            robot_health = 10
+            end = False
+            game_over_timer = 250
+            elapsed_time = 0
+    else:
+        WIN.blit(VOID, (0, 0))
+        time_text = HEALTH_FONT.render(f"{round(elapsed_time)}s", 1, 'white')
+        WIN.blit(time_text, (10, 10))
+        health_bar = HEALTH_FONT.render("HEALTH: "+str(robot_health), 1, SILVER)
+        WIN.blit(health_bar, (350, 10))
+        create_asteroid()
 
-    time_text = HEALTH_FONT.render(f"{round(elapsed_time)}s", 1, 'white')
-    WIN.blit(time_text, (10, 10))
     
-    create_asteroid()
     WIN.blit(ROBOT, (robot.x, robot.y))
 
     for ast, obs in asteroids:
         WIN.blit(ast.image, (ast.x, ast.y))
     move_asteroids()
     
-    health_bar = HEALTH_FONT.render("HEALTH: "+str(robot_health), 1, SILVER)
-    WIN.blit(health_bar, (350, 10))
 
     pygame.display.update()
 
 def main():
-    global robot, robot_health, end, elapsed_time
+    global robot, robot_health, end, elapsed_time, game_over_timer
 
     robot = pygame.Rect(width//2-ROBOT.get_width(),
                         height-100, ROBO_WIDTH, ROBOT_HEIGHT)
@@ -150,6 +164,7 @@ def main():
     start_time = time.time()
     elapsed_time = 0
     end = False
+    game_over_timer = 250
 
     while run:
         clock.tick(FPS)
@@ -160,7 +175,6 @@ def main():
             if event.type == USER_HIT:
                 robot_health -= 1
                 if robot_health == 0:
-                    elapsed_time = 0
                     end = True
                     end_game()
         
