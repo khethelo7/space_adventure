@@ -64,7 +64,7 @@ class Asteroid:
 def detect_collision_on_asteroid():
     for bullet in bullets:
         for ast, obs in asteroids:
-            if bullet.colliderect(obs):
+            if bullet.colliderect(obs) and bullet in bullets:
                 pygame.event.post(pygame.event.Event(ASTEROID_HIT))
                 asteroids.remove((ast, obs))
                 bullets.remove(bullet)
