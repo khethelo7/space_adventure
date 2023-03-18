@@ -44,6 +44,7 @@ asteroids = []
 
 # event declaration
 USER_HIT = pygame.USEREVENT + 1
+ASTEROID_HIT = pygame.USEREVENT + 2
 
 # font declaration
 HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
@@ -60,7 +61,16 @@ class Asteroid:
         self.height = OBS_HEIGHT
 
 
-def detect_collision():
+def detect_collision_on_asteroid():
+    for bullet in bullets:
+        for ast, obs in asteroids:
+            if bullet.colliderect(obs):
+                pygame.event.post(pygame.event.Event(ASTEROID_HIT))
+                asteroids.remove((ast, obs))
+                bullets.remove(bullet)
+
+
+def detect_collision_on_player():
     for ast, obs in asteroids:
         if robot.colliderect(obs):
             pygame.event.post(pygame.event.Event(USER_HIT))
@@ -78,7 +88,23 @@ def end_game():
     robot.y = height-100
     
 
+def create_bullet():
+    global bullets
     
+    bullet = pygame.Rect(
+        robot.x, robot.y + robot.height//2-2, 5, 10
+    )
+    bullets.append(bullet)
+
+
+def move_bullets():
+    global bullets
+
+    for bullet in bullets:
+        bullet.y -= 15
+        if bullet.y < 0:
+            bullets.remove(bullet)
+
 
 def create_asteroid():
     global asteroids
@@ -115,6 +141,9 @@ def listen():
         robot.x -= VEL
     if keys_pressed[pygame.K_RIGHT] and robot.x + VEL < width-45:
         robot.x += VEL
+    
+    if keys_pressed[pygame.K_b]:
+        create_bullet()
 
 
 def setup_world():
@@ -145,6 +174,9 @@ def setup_world():
     
     WIN.blit(ROBOT, (robot.x, robot.y))
 
+    for bullet in bullets:
+        pygame.draw.rect(WIN, RED, bullet)
+
     for ast, obs in asteroids:
         WIN.blit(ast.image, (ast.x, ast.y))
     move_asteroids()
@@ -153,7 +185,7 @@ def setup_world():
     pygame.display.update()
 
 def main():
-    global robot, robot_health, end, elapsed_time, game_over_timer
+    global robot, robot_health, end, elapsed_time, game_over_timer, bullets
 
     robot = pygame.Rect(width//2-ROBOT.get_width(),
                         height-100, ROBO_WIDTH, ROBOT_HEIGHT)
@@ -165,6 +197,7 @@ def main():
     elapsed_time = 0
     end = False
     game_over_timer = 250
+    bullets = []
 
     while run:
         clock.tick(FPS)
@@ -178,7 +211,9 @@ def main():
                     end = True
                     end_game()
         
-        detect_collision()
+        move_bullets()
+        detect_collision_on_asteroid()
+        detect_collision_on_player()
         setup_world()
         listen()
 
