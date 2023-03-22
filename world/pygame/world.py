@@ -3,7 +3,7 @@ import random
 import pygame
 import os
 pygame.font.init()
-pygame.font.init()
+pygame.mixer.init()
 
 # border of world
 width, height = 900, 900
@@ -25,6 +25,10 @@ ROBOT_IMAGE = pygame.transform.scale(
     pygame.image.load(os.path.join('Assets', 'spaceship_red.png')),
     (ROBO_WIDTH, ROBOT_HEIGHT))
 ROBOT = pygame.transform.rotate(ROBOT_IMAGE, 180)
+
+# sound declaration constants
+GAME_MUSIC = pygame.mixer.Sound(os.path.join('Assets','game.mp3'))
+
 
 # world declaration constants
 WIN = pygame.display.set_mode((width, height))
@@ -82,7 +86,6 @@ def end_game():
     
     elapsed_time = 0
     asteroids.clear()
-    # pygame.time.delay(5000)
     robot_health = 10
     robot.x = width//2-ROBOT.get_width()
     robot.y = height-100
@@ -91,10 +94,11 @@ def end_game():
 def create_bullet():
     global bullets
     
-    bullet = pygame.Rect(
-        robot.x, robot.y + robot.height//2-2, 5, 10
-    )
-    bullets.append(bullet)
+    if len(bullets) <= 5:
+        bullet = pygame.Rect(
+            robot.x+17, robot.y + robot.height//2-2, 5, 10
+        )
+        bullets.append(bullet)
 
 
 def move_bullets():
@@ -147,7 +151,7 @@ def listen():
 
 
 def setup_world():
-    global asteroids, robot_health, end, game_over_timer, elapsed_time
+    global asteroids, robot_health, end, game_over_timer, elapsed_time, start_time
     
     if end:
         if game_over_timer > 0:
@@ -163,6 +167,7 @@ def setup_world():
             end = False
             game_over_timer = 250
             elapsed_time = 0
+            start_time = time.time()
     else:
         WIN.blit(VOID, (0, 0))
         time_text = HEALTH_FONT.render(f"{round(elapsed_time)}s", 1, 'white')
@@ -185,7 +190,7 @@ def setup_world():
     pygame.display.update()
 
 def main():
-    global robot, robot_health, end, elapsed_time, game_over_timer, bullets
+    global robot, robot_health, end, elapsed_time, game_over_timer, bullets, start_time
 
     robot = pygame.Rect(width//2-ROBOT.get_width(),
                         height-100, ROBO_WIDTH, ROBOT_HEIGHT)
@@ -193,13 +198,15 @@ def main():
 
     run = True
     clock = pygame.time.Clock()
-    start_time = time.time()
-    elapsed_time = 0
     end = False
     game_over_timer = 250
     bullets = []
+    start_time = time.time()
+    
+    GAME_MUSIC.play()
 
     while run:
+        elapsed_time = 0
         clock.tick(FPS)
         elapsed_time = time.time() - start_time
         for event in pygame.event.get():
