@@ -111,15 +111,34 @@ def move_bullets():
 
 
 def create_asteroid():
-    global asteroids
+    global asteroids, max_obs
+    
     
     x = random.randint(0, width - OBS_WIDTH)
     y = 0 - OBS_HEIGHT
     velocity = random.randint(1, VEL)
     asteroid = Asteroid(x, y, velocity, ASTEROID_IMAGE)
     obs = pygame.Rect(x, y, OBS_WIDTH, OBS_HEIGHT)
+    
     if len(asteroids) < max_obs:
         asteroids.append((asteroid,obs))
+    
+    if elapsed_time < 25:
+        max_obs = 5
+    elif elapsed_time > 25 and elapsed_time < 50:
+        max_obs = 10
+    elif elapsed_time > 50 and elapsed_time < 75:
+        max_obs = 20
+    elif elapsed_time > 75 and elapsed_time < 100:
+        max_obs = 50
+    elif elapsed_time > 100 and elapsed_time < 125:
+        max_obs = 75
+    elif elapsed_time > 125 and elapsed_time < 175:
+        max_obs = 100
+    else:
+        max_obs = 200
+        
+    move_asteroids()
     
 
 def move_asteroids():
@@ -184,7 +203,7 @@ def setup_world():
 
     for ast, obs in asteroids:
         WIN.blit(ast.image, (ast.x, ast.y))
-    move_asteroids()
+    
     
 
     pygame.display.update()
