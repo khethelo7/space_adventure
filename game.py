@@ -1,142 +1,250 @@
-import turtle
+import time
+import random
+import pygame
+import os
+pygame.font.init()
+pygame.mixer.init()
 
-# variables tracking position and direction
-position_x = 0
-position_y = 0
-directions = ['forward', 'right', 'back', 'left']
-current_direction_index = 0
+# border of world
+width, height = 900, 900
 
-# area limit vars
-min_y, max_y = -200, 200
-min_x, max_x = -100, 100
+# color declaration constants
+SILVER = (192, 192, 192)
+BLUE = (50, 80, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
 
-def is_position_allowed(new_x, new_y):
-    """
-    Checks if the new position will still fall within the max area limit
-    :param new_x: the new/proposed x position
-    :param new_y: the new/proposed y position
-    :return: True if allowed, i.e. it falls in the allowed area, else False
-    """
-    return min_x <= new_x <= max_x and min_y <= new_y <= max_y
+# graphics declaration constants
+FPS = 60
+VOID = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'void.png')), (width, height))
 
-def update_position(robot_name, steps):
-    """
-    Update the current x and y positions given the current direction, and specific nr of steps
-    :param steps:
-    :return: True if the position was updated, else False
-    """
-    global position_x, position_y, robot
-    new_x = position_x
-    new_y = position_y
+# robot declaration constants
+ROBO_WIDTH, ROBOT_HEIGHT = 40, 40
+ROBOT_IMAGE = pygame.transform.scale(
+    pygame.image.load(os.path.join('Assets', 'spaceship_red.png')),
+    (ROBO_WIDTH, ROBOT_HEIGHT))
+ROBOT = pygame.transform.rotate(ROBOT_IMAGE, 180)
 
-    if directions[current_direction_index] == 'forward':
-        new_y = new_y + steps
-    elif directions[current_direction_index] == 'right':
-        new_x = new_x + steps
-    elif directions[current_direction_index] == 'back':
-        new_y = new_y - steps
-    elif directions[current_direction_index] == 'left':
-        new_x = new_x - steps
+# sound declaration constants
+GAME_MUSIC = pygame.mixer.Sound(os.path.join('Assets','game.mp3'))
 
-    if obstacles.is_position_blocked(new_x, new_y) or\
-        obstacles.is_path_blocked(position_x, position_y, new_x, new_y):
-        return None
+
+# world declaration constants
+WIN = pygame.display.set_mode((width, height))
+VEL = 10
+OBS_WIDTH, OBS_HEIGHT = 50, 50
+max_obs = 10
+
+# obstacle declaration constants
+ASTEROID_IMAGE = pygame.transform.scale(pygame.image.load(
+    os.path.join('Assets', 'asteroid.png')), (OBS_WIDTH, OBS_HEIGHT))
+
+GAME_OVER = pygame.transform.scale(pygame.image.load(
+    os.path.join('Assets', 'game-over.png')), (900,900))
+
+# variables recieved from robot.py
+asteroids = []
+
+# event declaration
+USER_HIT = pygame.USEREVENT + 1
+ASTEROID_HIT = pygame.USEREVENT + 2
+
+# font declaration
+HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
+
+
+
+class Asteroid:
+    def __init__(self, x, y, velocity, image):
+        self.x = x
+        self.y = y
+        self.velocity = velocity
+        self.image = image
+        self.width = OBS_WIDTH
+        self.height = OBS_HEIGHT
+
+
+def detect_collision_on_asteroid():
+    for bullet in bullets:
+        for ast, obs in asteroids:
+            if bullet.colliderect(obs) and bullet in bullets:
+                pygame.event.post(pygame.event.Event(ASTEROID_HIT))
+                asteroids.remove((ast, obs))
+                bullets.remove(bullet)
+
+
+def detect_collision_on_player():
+    for ast, obs in asteroids:
+        if robot.colliderect(obs):
+            pygame.event.post(pygame.event.Event(USER_HIT))
+            asteroids.remove((ast,obs))
+
+
+def end_game():
+    global robot_health, robot, elapsed_time
     
-    if is_position_allowed(new_x, new_y):
-        position_x = new_x
-        position_y = new_y
-        robot.forward(steps)
-        turtle.update()
-        return True
-    return False
-
-def do_forward(robot_name, steps):
-    """
-    Moves the robot forward the number of steps
-    :param robot_name:
-    :param steps:
-    :return: (True, forward output text)
-    """
-    go_on = update_position(robot_name, steps)
-
-    if go_on == True:
-        return True, ' > '+robot_name+' moved forward by '+str(steps)+' steps.'
-    elif go_on == None:
-        return True, f"{robot_name}: Sorry, there is an obstacle in the way."
-    elif go_on == False:
-        return True, ''+robot_name+': Sorry, I cannot go outside my safe zone.'
-
-def do_back(robot_name, steps):
-    """
-    Moves the robot forward the number of steps
-    :param robot_name:
-    :param steps:
-    :return: (True, forward output text)
-    """
-    go_on = update_position(robot_name, -steps)
-
-    if go_on == True:
-        return True, ' > '+robot_name+' moved back by '+str(steps)+' steps.'
-    elif go_on == None:
-        return True, f"{robot_name}: Sorry, there is an obstacle in the way."
-    elif go_on == False:
-        return True, ''+robot_name+': Sorry, I cannot go outside my safe zone.'
+    elapsed_time = 0
+    asteroids.clear()
+    robot_health = 10
+    robot.x = width//2-ROBOT.get_width()
+    robot.y = height-100
     
-def do_left_turn(robot_name):
-    """
-    Do a 90 degree turn to the left
-    :param robot_name:
-    :return: (True, left turn output text)
-    """
-    global current_direction_index, robot
-    
-    current_direction_index -= 1
-    if current_direction_index < 0:
-        current_direction_index = 3
-    
-    robot.left(90)
-    turtle.update()
-    return True, ' > '+robot_name+' turned left.'
 
-def do_right_turn(robot_name):
-    """
-    Do a 90 degree turn to the right
-    :param robot_name:
-    :return: (True, right turn output text)
-    """
-    global current_direction_index, robot
+def create_bullet():
+    global bullets
     
-    current_direction_index += 1
-    if current_direction_index > 3:
-        current_direction_index = 0
+    if len(bullets) <= 5:
+        bullet = pygame.Rect(
+            robot.x+17, robot.y + robot.height//2-2, 5, 10
+        )
+        bullets.append(bullet)
+
+
+def move_bullets():
+    global bullets
+
+    for bullet in bullets:
+        bullet.y -= 15
+        if bullet.y < 0:
+            bullets.remove(bullet)
+
+
+def create_asteroid():
+    global asteroids, max_obs
+    
+    
+    x = random.randint(0, width - OBS_WIDTH)
+    y = 0 - OBS_HEIGHT
+    velocity = random.randint(1, VEL)
+    asteroid = Asteroid(x, y, velocity, ASTEROID_IMAGE)
+    obs = pygame.Rect(x, y, OBS_WIDTH, OBS_HEIGHT)
+    
+    if len(asteroids) < max_obs:
+        asteroids.append((asteroid,obs))
+    
+    if elapsed_time < 25:
+        max_obs = 5
+    elif elapsed_time > 25 and elapsed_time < 50:
+        max_obs = 10
+    elif elapsed_time > 50 and elapsed_time < 75:
+        max_obs = 20
+    elif elapsed_time > 75 and elapsed_time < 100:
+        max_obs = 50
+    elif elapsed_time > 100 and elapsed_time < 125:
+        max_obs = 75
+    elif elapsed_time > 125 and elapsed_time < 175:
+        max_obs = 100
+    else:
+        max_obs = 200
         
-    robot.right(90)
-    turtle.update()
-    return True, ' > '+robot_name+' turned right.'
+    move_asteroids()
+    
 
-def show_position(robot_name):
-    print(' > '+robot_name+' now at position ('+str(position_x)+','+str(position_y)+').')
+def move_asteroids():
+    global asteroids
+    
+    for ast,obs in asteroids:
+        ast.y += ast.velocity
+        obs.y += ast.velocity
+        
+        if ast.y > height:
+            asteroids.remove((ast,obs))
 
-# The environment around the robot
-env = turtle.getscreen()
-env.setup(max_x*10, max_y*5)
-env.bgcolor("#000221")
-env.title("Toy Robot 4")
 
-# The robot
-robot = turtle.Turtle()
-robot.pensize(5), robot.shape("classic")
-robot.pencolor("navy blue"), robot.fillcolor("blue")
-robot.speed(0)
+def listen():
 
-# Seting the boundary
-robot.penup(), robot.goto(min_x, max_y), robot.pendown()
+    keys_pressed = pygame.key.get_pressed()
 
-for i in range(2):
-    robot.forward(200)
-    robot.right(90)
-    robot.forward(400)
-    robot.right(90)
+    if keys_pressed[pygame.K_UP] and robot.y + VEL > 0:
+        robot.y -= VEL
+    if keys_pressed[pygame.K_DOWN] and robot.y - VEL < height-45:
+        robot.y += VEL
+    if keys_pressed[pygame.K_LEFT] and robot.x - VEL > 0:
+        robot.x -= VEL
+    if keys_pressed[pygame.K_RIGHT] and robot.x + VEL < width-45:
+        robot.x += VEL
+    
+    if keys_pressed[pygame.K_b]:
+        create_bullet()
 
-robot.penup(), robot.home(), robot.left(90), robot.pendown(), robot.showturtle()
-robot.pencolor("#000221")
+
+def setup_world():
+    global asteroids, robot_health, end, game_over_timer, elapsed_time, start_time
+    
+    if end:
+        if game_over_timer > 0:
+            asteroids = []
+            WIN.fill(BLACK)
+            game_over_text = HEALTH_FONT.render(f"GAME OVER", 1, SILVER)
+            WIN.blit(game_over_text, (350, 10))
+            # WIN.blit(GAME_OVER, (0, 0))
+            game_over_timer -= 1
+        else:
+            asteroids = []
+            robot_health = 10
+            end = False
+            game_over_timer = 250
+            elapsed_time = 0
+            start_time = time.time()
+    else:
+        WIN.blit(VOID, (0, 0))
+        time_text = HEALTH_FONT.render(f"{round(elapsed_time)}s", 1, 'white')
+        WIN.blit(time_text, (10, 10))
+        health_bar = HEALTH_FONT.render("HEALTH: "+str(robot_health), 1, SILVER)
+        WIN.blit(health_bar, (350, 10))
+        create_asteroid()
+
+    
+    WIN.blit(ROBOT, (robot.x, robot.y))
+
+    for bullet in bullets:
+        pygame.draw.rect(WIN, RED, bullet)
+
+    for ast, obs in asteroids:
+        WIN.blit(ast.image, (ast.x, ast.y))
+    
+    
+
+    pygame.display.update()
+
+def main():
+    global robot, robot_health, end, elapsed_time, game_over_timer, bullets, start_time
+
+    robot = pygame.Rect(width//2-ROBOT.get_width(),
+                        height-100, ROBO_WIDTH, ROBOT_HEIGHT)
+    robot_health = 10
+
+    run = True
+    clock = pygame.time.Clock()
+    end = False
+    game_over_timer = 250
+    bullets = []
+    start_time = time.time()
+    
+    GAME_MUSIC.play()
+
+    while run:
+        elapsed_time = 0
+        clock.tick(FPS)
+        elapsed_time = time.time() - start_time
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == USER_HIT:
+                robot_health -= 1
+                if robot_health == 0:
+                    end = True
+                    end_game()
+        
+        move_bullets()
+        detect_collision_on_asteroid()
+        detect_collision_on_player()
+        setup_world()
+        listen()
+
+    pygame.quit()
+
+
+if __name__ == '__main__':
+    main()
